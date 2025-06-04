@@ -18,6 +18,14 @@ class ColourSensor:
         self._bus.start()
         self._bus.writeto(self._i2c_address, b'\x80\x03')
         self._bus.writeto(self._i2c_address, b'\x81\x2b')
+    
+    @property
+    def rgb(self):
+        time_now = time.ticks_ms()
+        if time.ticks_diff(time_now, self._last_read_time) > 10:
+            self._rgb = tuple(int(x * 255) for x in self.scaled())
+            self._last_read_time = time_now
+        return self._rgb
 
     @property
     def red(self):
@@ -37,13 +45,6 @@ class ColourSensor:
             return tuple(float(x) / crgb[0] for x in crgb[1:])
 
         return (0,0,0)
-
-    def rgb(self):
-        time_now = time.ticks_ms()
-        if time.ticks_diff(time_now, self._last_read_time) > 10:
-            self._rgb = tuple(int(x * 255) for x in self.scaled())
-            self._last_read_time = time_now
-        return self._rgb
 
     def light(self):
         return self.raw()[0]
